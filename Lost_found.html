@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lost & Found</title>
+<style>
+    body { font-family: Arial, sans-serif; margin:0; padding:0; background:#f5f5f5; }
+    .container { max-width: 600px; margin: auto; padding: 20px; }
+    h2 { text-align: center; color: #d32f2f; }
+    input, textarea, button, select { width: 100%; padding: 10px; margin: 5px 0; border-radius: 5px; border: 1px solid #ccc; }
+    button { background: #d32f2f; color: white; border: none; cursor: pointer; }
+    button:hover { background: #b71c1c; }
+    .hidden { display: none; }
+    .section { background: white; padding: 15px; margin: 10px 0; border-radius: 10px; box-shadow: 0 0 5px #ccc; }
+    .messages { max-height: 200px; overflow-y: auto; background: #eee; padding: 10px; border-radius: 5px; margin-bottom: 10px; }
+</style>
+</head>
+<body>
+
+<div class="container" id="auth-container">
+    <h2>Lost & Found Portal</h2>
+    <div id="register-form">
+        <h3>Register</h3>
+        <input type="text" id="reg-username" placeholder="Username">
+        <input type="password" id="reg-password" placeholder="Password">
+        <button onclick="registerUser()">Register</button>
+        <p>Already have an account? <span style="color:blue;cursor:pointer" onclick="showLogin()">Sign In</span></p>
+    </div>
+
+    <div id="login-form" class="hidden">
+        <h3>Sign In</h3>
+        <input type="text" id="login-username" placeholder="Username">
+        <input type="password" id="login-password" placeholder="Password">
+        <button onclick="loginUser()">Login</button>
+        <p>New user? <span style="color:blue;cursor:pointer" onclick="showRegister()">Register</span></p>
+    </div>
+</div>
+
+<div class="container hidden" id="main-container">
+    <h2>Welcome <span id="user-name"></span></h2>
+
+    <!-- Lost & Found Sections -->
+    <div class="section">
+        <h3>Lost Items</h3>
+        <input type="text" id="lost-item" placeholder="Item Name">
+        <textarea id="lost-item-desc" placeholder="Item Description"></textarea>
+        <button onclick="addLostItem()">Add Lost Item</button>
+        <ul id="lost-items-list"></ul>
+    </div>
+
+    <div class="section">
+        <h3>Found Items</h3>
+        <input type="text" id="found-item" placeholder="Item Name">
+        <textarea id="found-item-desc" placeholder="Item Description"></textarea>
+        <button onclick="addFoundItem()">Add Found Item</button>
+        <ul id="found-items-list"></ul>
+    </div>
+
+    <div class="section">
+        <h3>Lost Persons</h3>
+        <input type="text" id="lost-person" placeholder="Person Name">
+        <textarea id="lost-person-desc" placeholder="Details"></textarea>
+        <button onclick="addLostPerson()">Add Lost Person</button>
+        <ul id="lost-person-list"></ul>
+    </div>
+
+    <div class="section">
+        <h3>Found Persons</h3>
+        <input type="text" id="found-person" placeholder="Person Name">
+        <textarea id="found-person-desc" placeholder="Details"></textarea>
+        <button onclick="addFoundPerson()">Add Found Person</button>
+        <ul id="found-person-list"></ul>
+    </div>
+
+    <!-- Messaging -->
+    <div class="section">
+        <h3>Messages</h3>
+        <div class="messages" id="messages-box"></div>
+        <input type="text" id="message-input" placeholder="Type your message">
+        <button onclick="sendMessage()">Send to All</button>
+    </div>
+
+</div>
+
+<script>
+let users = []; // To store users
+let currentUser = '';
+let lostItems = [];
+let foundItems = [];
+let lostPersons = [];
+let foundPersons = [];
+let messages = [];
+
+function showLogin() {
+    document.getElementById('register-form').classList.add('hidden');
+    document.getElementById('login-form').classList.remove('hidden');
+}
+function showRegister() {
+    document.getElementById('login-form').classList.add('hidden');
+    document.getElementById('register-form').classList.remove('hidden');
+}
+
+function registerUser() {
+    let username = document.getElementById('reg-username').value;
+    let password = document.getElementById('reg-password').value;
+    if(username && password){
+        if(users.find(u => u.username === username)){
+            alert('Username already exists!');
+            return;
+        }
+        users.push({username,password});
+        alert('Registered Successfully! Please login.');
+        showLogin();
+    } else alert('Please fill all fields');
+}
+
+function loginUser() {
+    let username = document.getElementById('login-username').value;
+    let password = document.getElementById('login-password').value;
+    let user = users.find(u => u.username === username && u.password === password);
+    if(user){
+        currentUser = username;
+        document.getElementById('auth-container').classList.add('hidden');
+        document.getElementById('main-container').classList.remove('hidden');
+        document.getElementById('user-name').innerText = currentUser;
+    } else alert('Invalid credentials');
+}
+
+// Add items/persons
+function addLostItem(){
+    let name = document.getElementById('lost-item').value;
+    let desc = document.getElementById('lost-item-desc').value;
+    if(name){
+        lostItems.push({name,desc});
+        renderList('lost-items-list', lostItems);
+        document.getElementById('lost-item').value='';
+        document.getElementById('lost-item-desc').value='';
+    }
+}
+function addFoundItem(){
+    let name = document.getElementById('found-item').value;
+    let desc = document.getElementById('found-item-desc').value;
+    if(name){
+        foundItems.push({name,desc});
+        renderList('found-items-list', foundItems);
+        document.getElementById('found-item').value='';
+        document.getElementById('found-item-desc').value='';
+    }
+}
+function addLostPerson(){
+    let name = document.getElementById('lost-person').value;
+    let desc = document.getElementById('lost-person-desc').value;
+    if(name){
+        lostPersons.push({name,desc});
+        renderList('lost-person-list', lostPersons);
+        document.getElementById('lost-person').value='';
+        document.getElementById('lost-person-desc').value='';
+    }
+}
+function addFoundPerson(){
+    let name = document.getElementById('found-person').value;
+    let desc = document.getElementById('found-person-desc').value;
+    if(name){
+        foundPersons.push({name,desc});
+        renderList('found-person-list', foundPersons);
+        document.getElementById('found-person').value='';
+        document.getElementById('found-person-desc').value='';
+    }
+}
+
+// Render lists
+function renderList(id, arr){
+    let list = document.getElementById(id);
+    list.innerHTML = '';
+    arr.forEach(item => {
+        let li = document.createElement('li');
+        li.innerHTML = `<b>${item.name}</b>: ${item.desc || ''}`;
+        list.appendChild(li);
+    });
+}
+
+// Messaging
+function sendMessage(){
+    let msg = document.getElementById('message-input').value;
+    if(msg){
+        messages.push({user: currentUser, text: msg});
+        renderMessages();
+        document.getElementById('message-input').value='';
+    }
+}
+function renderMessages(){
+    let box = document.getElementById('messages-box');
+    box.innerHTML='';
+    messages.forEach(m => {
+        let p = document.createElement('p');
+        p.innerHTML = `<b>${m.user}:</b> ${m.text}`;
+        box.appendChild(p);
+    });
+}
+
+</script>
+</body>
+</html>
